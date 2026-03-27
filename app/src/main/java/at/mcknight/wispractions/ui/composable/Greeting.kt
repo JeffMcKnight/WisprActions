@@ -7,13 +7,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import at.mcknight.wispractions.ui.theme.WisprActionsTheme
 
 @Composable
-fun Greeting(
+fun MicrophoneButton(
     name: String,
     modifier: Modifier = Modifier,
     clickHandler: () -> Unit
@@ -33,8 +32,8 @@ fun Greeting(
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun MicrophoneButtonPreview() {
     WisprActionsTheme {
-        Greeting("Android"){}
+        MicrophoneButton("Android"){}
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +27,7 @@ fun MicPermissionDialogs(
     confirmHandler: () -> Unit,
     dismissHandler: () -> Unit,
 ) {
+    Log.i("MicPermissions", "dialogState: ${dialogState?.javaClass}")
     when (dialogState) {
         is PrePrompt -> {
             AlertDialog(
@@ -68,7 +70,7 @@ fun MicPermissionDialogs(
                 title = { Text(dialogState.title) },
                 text = { Text(dialogState.msg) },
                 confirmButton = {
-                    TextButton(onClick = { launchSettings(context) }) {
+                    TextButton(onClick = { launchSettingsActivity(context) }) {
                         Text(dialogState.confirmLabel)
                     }
                 },
@@ -87,7 +89,8 @@ fun MicPermissionDialogs(
 /**
  * Launch to microphone settings page
  */
-private fun launchSettings(context: Context) {
+private fun launchSettingsActivity(context: Context) {
+    Log.i("MicPermissions", "launchSettingsActivity()")
     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", context.packageName, null)
     })

@@ -3,6 +3,7 @@ package at.mcknight.wispractions
 import android.Manifest.permission.RECORD_AUDIO
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +19,7 @@ import androidx.core.content.ContextCompat
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.PermissionDenied
 import at.mcknight.wispractions.PermissionAction.PermissionGranted
-import at.mcknight.wispractions.PermissionAction.RequestMicPermission
-import at.mcknight.wispractions.ui.composable.Greeting
+import at.mcknight.wispractions.ui.composable.MicrophoneButton
 import at.mcknight.wispractions.ui.composable.MicPermissionDialogs
 import at.mcknight.wispractions.ui.theme.WisprActionsTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -30,19 +30,21 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModel()
-    private val requestPermission
-        get() = RequestMicPermission(
-            shouldShowRequestPermissionRationale(RECORD_AUDIO),
-            ContextCompat.checkSelfPermission(this, RECORD_AUDIO) == PERMISSION_GRANTED
-        )
 
     private val requestPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted) viewModel.sendAction(PermissionGranted)
-            else viewModel.sendAction(
+            Log.i("MicPermissions", "registerForActivityResult() -- granted: $granted")
+            if (granted) viewModel.sendPermissionAction(PermissionGranted)
+            else viewModel.sendPermissionAction(
                 PermissionDenied(!shouldShowRequestPermissionRationale(RECORD_AUDIO))
             )
         }
+
+    private val micClickAction: MicClickAction
+        get() = MicClickAction(
+            shouldShowRequestPermissionRationale(RECORD_AUDIO),
+            ContextCompat.checkSelfPermission(this, RECORD_AUDIO) == PERMISSION_GRANTED
+        )
 
     /**
      * Set up the UI and collect UI state from the ViewModel
@@ -57,18 +59,20 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     snackbarHost = {}) { innerPadding ->
-                    Greeting(
+                    MicrophoneButton(
                         name = uiState.name,
                         modifier = Modifier.padding(innerPadding),
-                        clickHandler = { viewModel.sendAction(requestPermission)}
+                        clickHandler = { viewModel.sendAction(micClickAction)}
                     )
                     MicPermissionDialogs(
                         dialogState = dialogState,
                         confirmHandler = {
-                            viewModel.sendAction(DismissDialog)
+                            Log.i("MicPermissions", "MicPermissionDialogs.confirmHandler")
+                            viewModel.sendPermissionAction(DismissDialog)
                             requestPermissionLauncher.launch(RECORD_AUDIO)
-                        }
-                    ) { viewModel.sendAction(DismissDialog) }
+                        },
+                        dismissHandler = { viewModel.sendPermissionAction(DismissDialog) }
+                    )
                 }
             }
         }
