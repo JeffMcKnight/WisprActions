@@ -1,17 +1,15 @@
 package at.mcknight.wispractions.ui.composable
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import at.mcknight.wispractions.DialogType
-import at.mcknight.wispractions.DialogType.*
+import at.mcknight.wispractions.DialogType.PermissionRequired
+import at.mcknight.wispractions.DialogType.PrePrompt
+import at.mcknight.wispractions.DialogType.Rationale
+import at.mcknight.wispractions.LOG_TAG
 
 /**
  * Renders the appropriate microphone permission dialog based on [DialogType].
@@ -26,8 +24,9 @@ fun MicPermissionDialogs(
     dialogState: DialogType?,
     confirmHandler: () -> Unit,
     dismissHandler: () -> Unit,
+    permissionsRequiredHandler: () -> Unit,
 ) {
-    Log.i("MicPermissions", "dialogState: ${dialogState?.javaClass}")
+    Log.i(LOG_TAG, "dialogState: ${dialogState?.javaClass}")
     when (dialogState) {
         is PrePrompt -> {
             AlertDialog(
@@ -64,13 +63,12 @@ fun MicPermissionDialogs(
             )
         }
         is PermissionRequired -> {
-            val context = LocalContext.current
             AlertDialog(
                 onDismissRequest = { dismissHandler() },
                 title = { Text(dialogState.title) },
                 text = { Text(dialogState.msg) },
                 confirmButton = {
-                    TextButton(onClick = { launchSettingsActivity(context) }) {
+                    TextButton(onClick = { permissionsRequiredHandler() }) {
                         Text(dialogState.confirmLabel)
                     }
                 },
@@ -86,12 +84,3 @@ fun MicPermissionDialogs(
     }
 }
 
-/**
- * Launch to microphone settings page
- */
-private fun launchSettingsActivity(context: Context) {
-    Log.i("MicPermissions", "launchSettingsActivity()")
-    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-        data = Uri.fromParts("package", context.packageName, null)
-    })
-}

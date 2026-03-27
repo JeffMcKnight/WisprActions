@@ -16,6 +16,9 @@ import at.mcknight.wispractions.ui.composable.MicPermissionDialogs
  */
 class MicrophonePermissionHandler() {
 
+    var awaitingSettingsReturn by mutableStateOf(false)
+        private set
+
     /**
      * The current dialog to display, or `null` if no dialog should be shown.
      */
@@ -33,6 +36,8 @@ class MicrophonePermissionHandler() {
             is PermissionDenied -> onPermissionDenied(action.permanentlyDenied)
             PermissionGranted -> onPermissionGranted()
             is RequestMicPermission -> requestMicPermission(action)
+            PermissionAction.ReturnedFromSettings -> awaitingSettingsReturn = false
+            PermissionAction.SettingsLaunched -> awaitingSettingsReturn = true
         }
     }
 
@@ -105,6 +110,8 @@ sealed class PermissionAction {
     data class PermissionDenied(val permanentlyDenied: Boolean) : PermissionAction()
     data object PermissionGranted : PermissionAction()
     data class RequestMicPermission(val shouldShowRationale: Boolean, val isGranted: Boolean) : PermissionAction()
+    data object ReturnedFromSettings : PermissionAction()
+    data object SettingsLaunched : PermissionAction()
 }
 
 /**
@@ -115,9 +122,7 @@ sealed class DialogType {
     data class PrePrompt(
         val title: String = "Microphone Access",
         val msg: String = "We need mic access to record voice memos. You'll see a system prompt next.",
-        val clickAction: PermissionAction = LaunchPermissionRequest,
         val confirmLabel: String = "Continue",
-        val dismissAction: PermissionAction = DismissDialog,
         val dismissLabel: String = "Not Now"
     ) : DialogType()
 
@@ -125,18 +130,15 @@ sealed class DialogType {
     data class Rationale(
         val title: String = "Microphone Required",
         val msg: String = "Recording won't work without microphone access.",
-        val clickAction: PermissionAction = LaunchPermissionRequest,
         val confirmLabel: String = "Try Again",
-        val dismissAction: PermissionAction = DismissDialog,
         val dismissLabel: String = "Cancel"
     ) : DialogType()
 
     /** Shown when the user previously denied the permission. */
     data class PermissionRequired(
         val title: String = "Microphone Required",
-        val msg: String = "Recording won't work without microphone access.",
+        val msg: String = "Recording won't work without microphone access. After enabling on the app Settings page, use the back button or swipe up to return to Wispr.",
         val confirmLabel: String = "Open Settings",
-        val dismissAction: PermissionAction = DismissDialog,
         val dismissLabel: String = "Cancel"
     ) : DialogType()
 }
