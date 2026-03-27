@@ -2,10 +2,13 @@ package at.mcknight.wispractions.ui.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -16,16 +19,18 @@ import at.mcknight.wispractions.ui.theme.WisprActionsTheme
 
 @Composable
 fun MicrophoneButton(
-    name: String,
-    clickHandler: () -> Unit = {}
+    name: String, clickHandler: () -> Unit = {}
 ) {
-    IconButton(
-        modifier = Modifier
-            .border(1.dp, Color.DarkGray, CircleShape)
-            .background(Color.LightGray, CircleShape),
-        onClick = { clickHandler() },
-    ) {
-        Icon(painter = painterResource(R.drawable.ic_mic), contentDescription = "Mic")
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(
+            modifier = Modifier
+                .border(1.dp, Color.DarkGray, CircleShape)
+                .background(Color.LightGray, CircleShape),
+            onClick = { clickHandler() },
+        ) {
+            Icon(painter = painterResource(R.drawable.ic_mic), contentDescription = "Mic")
+        }
+        Text(name)
     }
 }
 
@@ -33,6 +38,6 @@ fun MicrophoneButton(
 @Composable
 fun MicrophoneButtonPreview() {
     WisprActionsTheme {
-        MicrophoneButton("Android")
+        MicrophoneButton("Hold to Talk")
     }
 }

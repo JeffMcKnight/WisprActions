@@ -7,6 +7,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import at.mcknight.wispractions.DialogType
 import at.mcknight.wispractions.MainUiState
 import at.mcknight.wispractions.ui.theme.WisprActionsTheme
@@ -43,5 +44,20 @@ fun MainUi(
                 permissionsRequiredHandler = { permissionsRequiredHandler() }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainUiPreview() {
+    WisprActionsTheme {
+        MainUi(
+            MainUiState(),
+            dialogState = null,
+            clickHandler = { },
+            confirmHandler = { },
+            dismissHandler = { },
+            permissionsRequiredHandler = { }
+        )
     }
 }

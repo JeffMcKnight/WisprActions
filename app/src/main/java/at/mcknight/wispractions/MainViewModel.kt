@@ -59,5 +59,5 @@ private fun MicClickAction.toRequestMicPermission(): RequestMicPermission {
 data class MicClickAction(val shouldShowRationale: Boolean, val isGranted: Boolean)
 
 data class MainUiState(
-    val name: String = "Google"
+    val name: String = "Hold to Talk"
 )
