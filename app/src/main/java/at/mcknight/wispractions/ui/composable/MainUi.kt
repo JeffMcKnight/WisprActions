@@ -1,9 +1,11 @@
 package at.mcknight.wispractions.ui.composable
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import at.mcknight.wispractions.DialogType
 import at.mcknight.wispractions.MainUiState
@@ -22,13 +24,18 @@ fun MainUi(
     permissionsRequiredHandler: () -> Unit,
 ) {
     WisprActionsTheme {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()) { innerPadding ->
-            MicrophoneButton(
-                name = uiState.name,
-                modifier = Modifier.padding(innerPadding),
-                clickHandler = { clickHandler() }
-            )
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                MicrophoneButton(
+                    name = uiState.name,
+                    clickHandler = { clickHandler() }
+                )
+            }
             MicPermissionDialogs(
                 dialogState = dialogState,
                 confirmHandler = { confirmHandler() },

@@ -2,31 +2,30 @@ package at.mcknight.wispractions.ui.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import at.mcknight.wispractions.R
 import at.mcknight.wispractions.ui.theme.WisprActionsTheme
 
 @Composable
 fun MicrophoneButton(
     name: String,
-    modifier: Modifier = Modifier,
-    clickHandler: () -> Unit
+    clickHandler: () -> Unit = {}
 ) {
-    Button(
+    IconButton(
         modifier = Modifier
-            .border(1.dp, Color.Red)
-            .background(Color.Green),
+            .border(1.dp, Color.DarkGray, CircleShape)
+            .background(Color.LightGray, CircleShape),
         onClick = { clickHandler() },
     ) {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier,
-        )
+        Icon(painter = painterResource(R.drawable.ic_mic), contentDescription = "Mic")
     }
 }
 
@@ -34,6 +33,6 @@ fun MicrophoneButton(
 @Composable
 fun MicrophoneButtonPreview() {
     WisprActionsTheme {
-        MicrophoneButton("Android"){}
+        MicrophoneButton("Android")
     }
 }
