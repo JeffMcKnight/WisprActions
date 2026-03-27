@@ -12,18 +12,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.PermissionDenied
-import at.mcknight.wispractions.ui.composable.MicPermissionDialogs
-import at.mcknight.wispractions.ui.composable.MicrophoneButton
-import at.mcknight.wispractions.ui.theme.WisprActionsTheme
+import at.mcknight.wispractions.ui.composable.MainUi
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 const val LOG_TAG = "MicPermissions"
@@ -60,27 +54,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
-            WisprActionsTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    snackbarHost = {}) { innerPadding ->
-                    MicrophoneButton(
-                        name = uiState.name,
-                        modifier = Modifier.padding(innerPadding),
-                        clickHandler = { viewModel.sendAction(micClickAction)}
-                    )
-                    MicPermissionDialogs(
-                        dialogState = dialogState,
-                        confirmHandler = {
-                            Log.i(LOG_TAG, "MicPermissionDialogs.confirmHandler")
-                            viewModel.sendPermissionAction(DismissDialog)
-                            requestPermissionLauncher.launch(RECORD_AUDIO)
-                        },
-                        dismissHandler = { viewModel.sendPermissionAction(DismissDialog) },
-                        permissionsRequiredHandler = { launchSettingsActivity() }
-                    )
-                }
-            }
+            MainUi(
+                uiState = uiState,
+                dialogState = dialogState,
+                clickHandler = { viewModel.sendAction(micClickAction) },
+                confirmHandler = {
+                    viewModel.sendPermissionAction(DismissDialog)
+                    requestPermissionLauncher.launch(RECORD_AUDIO)
+                },
+                dismissHandler = { viewModel.sendPermissionAction(DismissDialog) },
+                permissionsRequiredHandler = { launchSettingsActivity() }
+            )
         }
     }
 
