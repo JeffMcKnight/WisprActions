@@ -15,9 +15,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.PermissionDenied
 import at.mcknight.wispractions.ui.composable.MainUi
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 const val LOG_TAG = "MicPermissions"
@@ -51,6 +53,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        lifecycleScope.launch {
+            viewModel.intentFlow.collect { intent ->
+                Log.i("TAG", "intent: $intent")
+            }
+        }
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState

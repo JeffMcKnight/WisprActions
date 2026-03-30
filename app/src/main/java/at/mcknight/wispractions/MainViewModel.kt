@@ -1,27 +1,36 @@
 package at.mcknight.wispractions
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.RequestMicPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 
 /**
  *
  */
 class MainViewModel(
     private val permissionHandler: MicrophonePermissionHandler,
-    private val speechToTextRepo: SpeechToTextRepo
+    private val promptRepo: PromptRepo,
+    private val speechToTextRepo: SpeechToTextRepo,
 ) : ViewModel() {
 
     val dialogState get() = permissionHandler.dialogState
 
-    private val _transcript = speechToTextRepo.transcript
+    private val _transcript = speechToTextRepo.transcript.shareIn(viewModelScope, Lazily)
     val transcript: Flow<String> = _transcript
+
+    private val _intentFlow = _transcript.map { promptRepo.inferIntent(it) }
+    val intentFlow: Flow<Intent> = _intentFlow
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
