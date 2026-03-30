@@ -24,7 +24,6 @@ fun MicrophoneButton(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(
             modifier = Modifier
-                .border(1.dp, Color.DarkGray, CircleShape)
                 .background(Color.LightGray, CircleShape),
             onClick = { clickHandler() },
         ) {
