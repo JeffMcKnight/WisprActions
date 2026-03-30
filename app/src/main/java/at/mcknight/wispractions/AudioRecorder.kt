@@ -46,7 +46,8 @@ class AudioRecorder(private val scope: CoroutineScope) {
     }
 
     /**
-     * Start recording from the microphone
+     * Start recording from the microphone. We launch the [CoroutineScope] with the [Dispatchers.IO]
+     * context since [AudioRecord.read] is a blocking I/O operation.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun start() {

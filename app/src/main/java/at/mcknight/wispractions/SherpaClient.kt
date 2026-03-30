@@ -21,7 +21,6 @@ class SherpaClient(
     private val modelDirName: String
 ) {
     private val audioBuffer = mutableListOf<Float>()
-    private val MIN_SAMPLES = 8000 // 500ms @ 16kHz
 
     val modelDir: File = copyModelFromAssets()
 
@@ -50,22 +49,33 @@ class SherpaClient(
     /**
      * Pass audio samples to the [stream] and decode to text using the [OnlineRecognizer].
      *
+     * There are a few wrinkles here:
+     *  * We need to accumulate the audio samples to [audioBuffer] because Sherpa seems to require
+     *  a minimum number of samples. If we don't do this we get a SIGABRT on the RenderThread.
+     *
+     * TODO: call [OnlineStream.inputFinished] and/or [OnlineStream.release] when recording stops
+     *
      * @param audioSamples audio sample data as an array of Floats
      * @return the transcribed text or null if the [recognizer] has not reached the endpoint
      */
     fun transcribe(audioSamples: FloatArray): String? {
         audioBuffer.addAll(audioSamples.toList())
+        Log.i("SherpaClient", "-- audioBuffer.size: ${audioBuffer.size}")
         if (audioBuffer.size < MIN_SAMPLES) return null
 
-        Log.i("SherpaClient", "audioBuffer.size: ${audioBuffer.size}")
         stream.acceptWaveform(audioBuffer.toFloatArray(), SAMPLE_RATE)
-        recognizer.decode(stream)
+        while (recognizer.isReady(stream)) {
+            Log.i("SherpaClient", "*** DECODING ***")
+            recognizer.decode(stream)
+        }
+        audioBuffer.clear()
         if (!recognizer.isEndpoint(stream)) return null
 
         val result = recognizer.getResult(stream).text
+
         Log.i("SherpaClient", "result: $result")
+        if (result == "") return null
         recognizer.reset(stream)
-        audioBuffer.clear() // or use a sliding window
         return result
     }
 
@@ -87,6 +97,10 @@ class SherpaClient(
             }
         }
         return destDir
+    }
+
+    companion object {
+        const val MIN_SAMPLES = 8000 // 500ms @ 16kHz
     }
 
 }
