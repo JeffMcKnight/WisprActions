@@ -24,13 +24,6 @@ class AudioRecorder(private val scope: CoroutineScope) {
         const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
     }
 
-    val bufferSize: Int
-        get() = AudioRecord.getMinBufferSize(
-        SAMPLE_RATE,
-        CHANNEL_CONFIG,
-        AUDIO_FORMAT
-    )
-
     private var audioRecord: AudioRecord? = null
     private var recordingJob: Job? = null
 
@@ -51,11 +44,11 @@ class AudioRecorder(private val scope: CoroutineScope) {
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun start() {
-//        val bufferSize = AudioRecord.getMinBufferSize(
-//            SAMPLE_RATE,
-//            CHANNEL_CONFIG,
-//            AUDIO_FORMAT
-//        )
+        val bufferSize: Int = AudioRecord.getMinBufferSize(
+            SAMPLE_RATE,
+            CHANNEL_CONFIG,
+            AUDIO_FORMAT
+        )
         require(bufferSize != AudioRecord.ERROR_BAD_VALUE) { "Invalid AudioRecord params" }
 
         Log.i("AudioRecorder", "bufferSize: $bufferSize")
@@ -63,7 +56,6 @@ class AudioRecorder(private val scope: CoroutineScope) {
             MediaRecorder.AudioSource.MIC,
             SAMPLE_RATE,
             CHANNEL_CONFIG,
-//            AUDIO_FORMAT,
             AudioFormat.ENCODING_PCM_FLOAT,
             bufferSize * 4   // larger buffer reduces underrun risk
         ).also { record ->

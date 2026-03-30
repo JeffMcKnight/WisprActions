@@ -11,11 +11,6 @@ import kotlinx.coroutines.flow.scan
 
 /**
  * Controls microphone recording and LLM transcription of the audio recorded by the mic.
- *
- * Things to try:
- *  * change min sample size
- *  * turn on hardware acceleration
- *  * de-dupe transcribed words (ick, hacky)
  */
 class SpeechToTextRepo(
     private val sherpaClient: SherpaClient,
