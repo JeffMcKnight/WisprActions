@@ -20,8 +20,6 @@ class SherpaClient(
     private val filesDir: File,
     private val modelDirName: String
 ) {
-    private val audioBuffer = mutableListOf<Float>()
-
     val modelDir: File = copyModelFromAssets()
 
     // Build recognizer config
@@ -49,32 +47,27 @@ class SherpaClient(
     /**
      * Pass audio samples to the [stream] and decode to text using the [OnlineRecognizer].
      *
-     * There are a few wrinkles here:
-     *  * We need to accumulate the audio samples to [audioBuffer] because Sherpa seems to require
-     *  a minimum number of samples. If we don't do this we get a SIGABRT on the RenderThread.
+     *  We have some defensive code in case we get an empty array of audio samples, which will
+     *  cause a SIGABRT on the RenderThread (frame starvation).
      *
      * TODO: call [OnlineStream.inputFinished] and/or [OnlineStream.release] when recording stops
      *
      * @param audioSamples audio sample data as an array of Floats
-     * @return the transcribed text or null if the [recognizer] has not reached the endpoint
+     * @return the transcribed text or null if the [recognizer] has not detected the end of the spoken phrase
      */
     fun transcribe(audioSamples: FloatArray): String? {
-        audioBuffer.addAll(audioSamples.toList())
-        Log.i("SherpaClient", "-- audioBuffer.size: ${audioBuffer.size}")
-        if (audioBuffer.size < MIN_SAMPLES) return null
+        if (audioSamples.isEmpty()) return null
 
-        stream.acceptWaveform(audioBuffer.toFloatArray(), SAMPLE_RATE)
+        stream.acceptWaveform(audioSamples, SAMPLE_RATE)
         while (recognizer.isReady(stream)) {
-            Log.i("SherpaClient", "*** DECODING ***")
             recognizer.decode(stream)
         }
-        audioBuffer.clear()
         if (!recognizer.isEndpoint(stream)) return null
 
         val result = recognizer.getResult(stream).text
-
         Log.i("SherpaClient", "result: $result")
         if (result == "") return null
+
         recognizer.reset(stream)
         return result
     }
@@ -97,10 +90,6 @@ class SherpaClient(
             }
         }
         return destDir
-    }
-
-    companion object {
-        const val MIN_SAMPLES = 8000 // 500ms @ 16kHz
     }
 
 }
