@@ -54,9 +54,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
+            val transcript by viewModel.transcript.collectAsState("Nothing transcribed yet...")
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
+                transcript = transcript,
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)
