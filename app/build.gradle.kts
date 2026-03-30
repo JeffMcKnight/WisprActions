@@ -57,6 +57,8 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android) // includes viewModel { }
+    /** ML Kit Prompt API */
+    implementation(libs.genai.prompt)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
