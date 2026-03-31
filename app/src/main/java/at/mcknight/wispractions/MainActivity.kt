@@ -67,17 +67,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        lifecycleScope.launch { viewModel.intentFlow.collect { intentMsg ->
-            Log.i("MainActivity", "intentMsg: $intentMsg")
-        } }
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
-//            val transcript by viewModel.transcript.collectAsState("Nothing transcribed yet...")
+            val transcript by viewModel.intentFlow.collectAsState("Nothing transcribed yet...")
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
-                transcript = "Nothing transcribed yet...",
+                transcript = transcript,
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)
