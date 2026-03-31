@@ -2,7 +2,10 @@ package at.mcknight.wispractions
 
 import android.content.res.AssetManager
 import android.util.Log
+import com.google.ai.edge.litertlm.Contents
+import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
+import com.google.ai.edge.litertlm.Message
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,6 +31,11 @@ class LiteRtRepo(
     private val modelDir: File
 ) {
 
+
+    private val conversationConfig = ConversationConfig(
+        systemInstruction = Contents.of(systemPrompt),
+    )
+
     /**
      * Initialize the LiteRT-LM engine. We use Dispatchers.IO because initialization takes a long
      * time, up to 10 min (?)
@@ -40,4 +48,25 @@ class LiteRtRepo(
             Log.d("LiteRtRepo", "initialize() finished")
         }
     }
+
+    fun prompt(prompt: String): String {
+        Log.i("LitRtRepo", "prompt: $prompt")
+        engine.createConversation(conversationConfig).use { conversation ->
+            val message = conversation.sendMessage(prompt)
+            Log.i("LitRtRepo", "message: $message")
+            return message.toString()
+        }
+    }
+
+    companion object {
+        val systemPrompt = """
+                You are an intent parser. Given a short voice command, respond ONLY with valid JSON:
+                {"action": "<action_name>", "params": {"key": "value"}}
+                Known actions: ACTION_SET_TIMER
+                Known keys: AlarmClock.EXTRA_LENGTH indicates timer duration
+                If unknown, use action: "UNKNOWN".
+                """.trimIndent()
+    }
 }
+
+

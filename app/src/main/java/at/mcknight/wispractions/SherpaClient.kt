@@ -76,7 +76,11 @@ class SherpaClient(
         if (!recognizer.isEndpoint(stream)) return null
 
         val result = recognizer.getResult(stream).text
-        Log.i("SherpaClient", "result: $result")
+        if (result.isNotEmpty()) {
+            Log.i("SherpaClient", "result: $result")
+        } else {
+            Log.v("SherpaClient", "result: $result")
+        }
         if (result == "") return null
 
         recognizer.reset(stream)

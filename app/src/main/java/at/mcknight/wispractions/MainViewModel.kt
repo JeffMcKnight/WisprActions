@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -23,8 +24,11 @@ class MainViewModel(
 
     val dialogState get() = permissionHandler.dialogState
 
-    private val _transcript = speechToTextRepo.transcript
-    val transcript: Flow<String> = _transcript
+//    private val _transcript = speechToTextRepo.transcript
+//    val transcript: Flow<String> = _transcript
+
+    private val _intentFlow = speechToTextRepo.transcript.map { liteRtRepo.prompt(it) }
+    val intentFlow: Flow<String> = _intentFlow
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()

@@ -68,7 +68,7 @@ class AudioRecorder(private val scope: CoroutineScope) {
             while (isActive) {
                 val samplesRead = audioRecord?.read(buffer, 0, buffer.size,  READ_BLOCKING) ?: break
                 val maxAmplitude = buffer.take(samplesRead).maxOrNull() ?: 0
-                Log.d("AudioRecorder", "bytes=$samplesRead maxAmplitude=$maxAmplitude")
+                Log.v("AudioRecorder", "bytes=$samplesRead maxAmplitude=$maxAmplitude")
                 if (samplesRead > 0) {
                     _audioChunks.emit(buffer.copyOf(samplesRead))
                 }
