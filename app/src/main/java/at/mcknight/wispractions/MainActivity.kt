@@ -67,14 +67,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        lifecycleScope.launch {
+            viewModel.intentFlow.collect { intent ->
+                startActivity(intent)
+            }
+        }
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
-            val transcript by viewModel.intentFlow.collectAsState("Nothing transcribed yet...")
+//            val transcript by viewModel.intentFlow.collectAsState("Nothing transcribed yet...")
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
-                transcript = transcript,
+                transcript = "Nothing transcribed yet...",
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)
@@ -85,6 +90,7 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
 
     /**
      * Launch to microphone settings page
@@ -115,3 +121,4 @@ class MainActivity : ComponentActivity() {
 
 
 }
+
