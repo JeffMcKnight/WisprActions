@@ -24,6 +24,16 @@ const val LOG_TAG = "MicPermissions"
 
 /**
  * This is our launcher Activity
+ *
+ * Some general notes:
+ * * Host Microphone Access must be enabled for Speech-to-Text to work on an emulator
+ *
+ * TODO:
+ *  * Try to get faster STT response time: Update EndpointConfig in SherpaClient to have a short
+ *  (~700ms) [com.k2fsa.sherpa.onnx.EndpointRule.minTrailingSilence] when we have a short
+ *  (~2000 ms) [com.k2fsa.sherpa.onnx.EndpointRule.minUtteranceLength]
+ *  * Try to get faster STT response time: enable hardware acceleration in SherpaClient ("nnapi")
+ *
  */
 class MainActivity : ComponentActivity() {
 

@@ -3,18 +3,21 @@ package at.mcknight.wispractions
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.RequestMicPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  *
  */
 class MainViewModel(
     private val permissionHandler: MicrophonePermissionHandler,
+    private val liteRtRepo: LiteRtRepo,
     private val speechToTextRepo: SpeechToTextRepo
 ) : ViewModel() {
 
@@ -25,6 +28,10 @@ class MainViewModel(
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch { liteRtRepo.initialize() }
+    }
 
     /**
      * Toggle speech-to-text if we have Record permissions.  We suppress the lint warning because
