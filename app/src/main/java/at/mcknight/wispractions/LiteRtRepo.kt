@@ -55,12 +55,11 @@ class LiteRtRepo(
     }
 
     fun prompt(prompt: String): String {
-        AlarmClock.ACTION_SET_TIMER
         Log.i("LitRtRepo", "prompt: $prompt")
         engine.createConversation(conversationConfig).use { conversation ->
             val message = conversation.sendMessage(prompt)
             Log.i("LitRtRepo", "message: $message")
-            return message.toString()
+            return message.toString().trimCruft()
         }
     }
 
@@ -68,14 +67,15 @@ class LiteRtRepo(
         val systemInstructions = """
                 You are an intent parser. Given a short voice command, respond ONLY with valid JSON:
                 {
-                  "action": "ACTION_SET_TIMER",
+                  "action": "android.intent.action.SET_TIMER",
                   "extras": {
-                    "AlarmClock.EXTRA_LENGTH": <TimerDuration>,
-                    "AlarmClock.EXTRA_MESSAGE": <TimerName>
+                    "android.intent.extra.alarm.LENGTH": <TimerDuration>,
+                    "android.intent.extra.alarm.MESSAGE": <TimerName>
                   }
                 }
-                Do not include the word "json" in the response.  It should be possible to pass the 
-                response directly to a JSON parser without modifications.
+                The first number in the command should be used as the EXTRA_LENGTH
+                Do not prepend the word "json" in the response.
+                Do not append or prepend backtick characters.
                 Omit AlarmClock.EXTRA_MESSAGE if no timer name is specified.
                 Set TimerDuration to 60 if no duration is specified.
                 If unknown, use action: "UNKNOWN".
@@ -83,4 +83,19 @@ class LiteRtRepo(
     }
 }
 
+/**
+ * Trim leading and trailing backticks and "json".  The LLM really wants to include this extra cruft
+ * even though the system instructions explicitly tell not to do so.
+ */
+private fun String.trimCruft(): String {
+    Log.d("trimCruft", "untrimmed: $this")
+    val cruftRemoved = this
+        .trim()
+        .removePrefix("```json")
+        .removePrefix("```")
+        .removeSuffix("\n```")
+        .trim()
+    Log.d("trimCruft", "cruftRemoved: $cruftRemoved")
+    return cruftRemoved
+}
 

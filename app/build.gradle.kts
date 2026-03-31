@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization") version "2.3.20"
 }
 
 android {
@@ -59,6 +60,8 @@ dependencies {
     implementation(libs.koin.android) // includes viewModel { }
     /** Google LiteRT-LM */
     implementation(libs.litertlm.android)
+    /** Kotlin Serialization */
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
