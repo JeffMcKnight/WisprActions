@@ -1,6 +1,7 @@
 package at.mcknight.wispractions
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.intOrNull
 
 /**
  *
@@ -27,8 +40,16 @@ class MainViewModel(
 //    private val _transcript = speechToTextRepo.transcript
 //    val transcript: Flow<String> = _transcript
 
-    private val _intentFlow = speechToTextRepo.transcript.map { liteRtRepo.prompt(it) }
-    val intentFlow: Flow<String> = _intentFlow
+    /**
+     * Converts the command transcribed by Sherpa-ONNX in the [SpeechToTextRepo] into an Android
+     * [Intent] that can be launched in the [MainActivity].  There are two steps:
+     * 1. Feed the raw command to the LiteRT to convert to a JSON blob with the command action and parameters, and
+     * 2. Deserialize the JSON into an [Intent] that can be executed
+     */
+    private val _intentFlow = speechToTextRepo.transcript
+        .map { liteRtRepo.prompt(it) }
+        .map { it.toIntent() }
+    val intentFlow: Flow<Intent> = _intentFlow
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -86,3 +107,29 @@ data class MicClickAction(val shouldShowRationale: Boolean, val isGranted: Boole
 data class MainUiState(
     val name: String = "Tap to Talk"
 )
+
+/**
+ * Deserialize the JSON string into an [Intent]
+ */
+private fun String.toIntent(): Intent {
+    val (action, extras) = Json.decodeFromString<IntentData>(this)
+    return Intent(action).apply {
+        extras.forEach { (key, value): Map.Entry<String, JsonElement> ->
+            when (value) {
+                is JsonObject -> { /* value is JsonObject, access via value["key"] */ }
+                is JsonArray -> { /* value is JsonArray, iterate value */ }
+                is JsonPrimitive -> {
+                    when {
+                        value is JsonNull -> Unit
+                        value.isString              -> putExtra(key, value.content)
+                        value.booleanOrNull != null -> putExtra(key, value.boolean)
+                        value.intOrNull != null     -> putExtra(key, value.int)
+                        value.doubleOrNull != null  -> putExtra(key, value.double)
+                        else -> Log.w("toIntent()", "unexpected value type: ${value.content}")
+                    }
+                }
+            }
+
+        }
+    }
+}

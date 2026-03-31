@@ -1,7 +1,6 @@
 package at.mcknight.wispractions
 
 import android.content.res.AssetManager
-import android.provider.AlarmClock
 import android.util.Log
 import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.ConversationConfig
