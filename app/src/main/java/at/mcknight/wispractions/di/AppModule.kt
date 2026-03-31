@@ -40,7 +40,7 @@ val appModule = module {
 
     single<File>(named("LiteRt")) { File(androidContext().filesDir, LITE_RT_MODEL_DIR) }
     single<String>(named("LiteRtPath")) { get<File>(named("LiteRt")).toString() }
-    single { EngineConfig(modelPath = "${get<String>(named("LiteRtPath"))}/tiny_garden_q8_ekv1024.litertlm") }
+    single { EngineConfig(modelPath = "${get<String>(named("LiteRtPath"))}/$LITE_RT_MODEL_NAME") }
     single { Engine(get()) }
     single { LiteRtRepo(
         engine = get(),
@@ -52,5 +52,9 @@ val appModule = module {
     viewModel { MainViewModel( get(), get(), get()) }
 }
 
-const val SHERPA_MODEL_DIR: String = "sherpa-onnx-streaming-zipformer-en-2023-06-21"
-const val LITE_RT_MODEL_DIR: String = "litert-community"
+
+//private const val LITE_RT_MODEL_NAME = "tiny_garden_q8_ekv1024.litertlm"
+private const val LITE_RT_MODEL_DIR: String = "litert-community"
+private const val LITE_RT_MODEL_NAME = "gemma3-1b-it-int4.litertlm"
+
+private const val SHERPA_MODEL_DIR: String = "sherpa-onnx-streaming-zipformer-en-2023-06-21"

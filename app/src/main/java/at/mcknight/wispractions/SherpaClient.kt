@@ -16,9 +16,11 @@ import java.io.File
  * TODO: inject [OnlineRecognizer] instead of building it here
  *
  * @param assetManager
+ * @param modelAssetDir the location of the model files in the Assets folder; in production, we
+ * would not put the model files in the Assets folder; we would download the model files, either
+ * with a hand-rolled downloader, or use something like Google Play Asset Delivery (PAD)
  * @param modelDestinationDir the location of the model files in the file system; this is where the
  *   model files need to be for the [OnlineRecognizer] to access them
- * @param modelAssetDir the location of the model files in the Assets folder
  */
 class SherpaClient(
     assetManager: AssetManager,
@@ -90,26 +92,30 @@ class SherpaClient(
 
 }
     /**
-     * Copies a sherpa-onnx model from assets to filesDir on first run.
+     * Copies LLM model files from [assetPath] to [destDir], as necessary.
      *
      * @param assetPath the path to the file in the Assets directory
      * @param assetManager
      * @param destDir the directory in the file system to copy the LLM model files to
-     * Returns the directory in filesDir containing the model files.
      */
     fun copyModelFromAssets(
         assetPath: String,
         assetManager: AssetManager,
         destDir: File
     ) {
-        if (destDir.exists()) return  // already copied
-
-        destDir.mkdirs()
+        // create the destination directory if it doesn't exist
+        if (!destDir.exists()) {
+            destDir.mkdirs()
+        }
 
         assetManager.list(assetPath)?.forEach { filename ->
             assetManager.open("$assetPath/$filename").use { input ->
-                File(destDir, filename).outputStream().use { output ->
-                    input.copyTo(output)
+                val destFile = File(destDir, filename)
+                // Only copy the file if it does not exist yet
+                if (!destFile.exists()) {
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
                 }
             }
         }
