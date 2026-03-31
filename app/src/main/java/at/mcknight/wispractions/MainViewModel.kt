@@ -50,12 +50,10 @@ class MainViewModel(
             return
         }
         sendPermissionAction(DismissDialog)
-        Log.i(LOG_TAG, "sendAction() -- action: $action")
         speechToTextRepo.toggle()
     }
 
     fun sendPermissionAction(action: PermissionAction) {
-        Log.d(LOG_TAG, "sendPermissionAction() -- action: $action")
         permissionHandler.sendAction(action)
     }
 
@@ -86,5 +84,5 @@ private fun MicClickAction.toRequestMicPermission(): RequestMicPermission {
 data class MicClickAction(val shouldShowRationale: Boolean, val isGranted: Boolean)
 
 data class MainUiState(
-    val name: String = "Press to Talk"
+    val name: String = "Tap to Talk"
 )

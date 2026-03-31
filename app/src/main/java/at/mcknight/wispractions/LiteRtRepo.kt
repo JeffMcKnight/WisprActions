@@ -88,14 +88,12 @@ class LiteRtRepo(
  * even though the system instructions explicitly tell not to do so.
  */
 private fun String.trimCruft(): String {
-    Log.d("trimCruft", "untrimmed: $this")
     val cruftRemoved = this
         .trim()
         .removePrefix("```json")
         .removePrefix("```")
         .removeSuffix("\n```")
         .trim()
-    Log.d("trimCruft", "cruftRemoved: $cruftRemoved")
     return cruftRemoved
 }
 
