@@ -14,22 +14,35 @@ import java.io.File
 
 /**
  * TODO: inject [OnlineRecognizer] instead of building it here
+ *
+ * @param assetManager
+ * @param modelAssetDir the location of the model files in the Assets folder; in production, we
+ * would not put the model files in the Assets folder; we would download the model files, either
+ * with a hand-rolled downloader, or use something like Google Play Asset Delivery (PAD)
+ * @param modelDestinationDir the location of the model files in the file system; this is where the
+ *   model files need to be for the [OnlineRecognizer] to access them
  */
 class SherpaClient(
-    private val assetManager: AssetManager,
-    private val filesDir: File,
-    private val modelDirName: String
+    assetManager: AssetManager,
+    modelAssetDir: String,
+    modelDestinationDir: File
 ) {
-    val modelDir: File = copyModelFromAssets()
 
+    init {
+        copyModelFromAssets(
+            modelAssetDir,
+            assetManager,
+            modelDestinationDir
+        )
+    }
     // Build recognizer config
     val modelConfig = OnlineModelConfig(
         transducer = OnlineTransducerModelConfig(
-            encoder = "${modelDir.path}/encoder-epoch-99-avg-1.onnx",
-            decoder = "${modelDir.path}/decoder-epoch-99-avg-1.onnx",
-            joiner = "${modelDir.path}/joiner-epoch-99-avg-1.onnx",
+            encoder = "${modelDestinationDir.path}/encoder-epoch-99-avg-1.onnx",
+            decoder = "${modelDestinationDir.path}/decoder-epoch-99-avg-1.onnx",
+            joiner = "${modelDestinationDir.path}/joiner-epoch-99-avg-1.onnx",
         ),
-        tokens = "${modelDir.path}/tokens.txt",
+        tokens = "${modelDestinationDir.path}/tokens.txt",
         numThreads = 2,
         debug = false,
         provider = "cpu" // Use "nnapi" for hardware acceleration
@@ -65,31 +78,46 @@ class SherpaClient(
         if (!recognizer.isEndpoint(stream)) return null
 
         val result = recognizer.getResult(stream).text
-        Log.i("SherpaClient", "result: $result")
+        if (result.isNotEmpty()) {
+            Log.i("SherpaClient", "result: $result")
+        } else {
+            Log.v("SherpaClient", "result: $result")
+        }
         if (result == "") return null
 
         recognizer.reset(stream)
         return result
     }
 
+
+}
     /**
-     * Copies a sherpa-onnx model from assets to filesDir on first run.
-     * Returns the directory in filesDir containing the model files.
+     * Copies LLM model files from [assetPath] to [destDir], as necessary.
+     *
+     * @param assetPath the path to the file in the Assets directory
+     * @param assetManager
+     * @param destDir the directory in the file system to copy the LLM model files to
      */
-    private fun copyModelFromAssets(): File {
-        val destDir = File(filesDir, modelDirName)
-        if (destDir.exists()) return destDir  // already copied
+    fun copyModelFromAssets(
+        assetPath: String,
+        assetManager: AssetManager,
+        destDir: File
+    ) {
+        // create the destination directory if it doesn't exist
+        if (!destDir.exists()) {
+            destDir.mkdirs()
+        }
 
-        destDir.mkdirs()
-
-        assetManager.list(modelDirName)?.forEach { filename ->
-            assetManager.open("$modelDirName/$filename").use { input ->
-                File(destDir, filename).outputStream().use { output ->
-                    input.copyTo(output)
+        assetManager.list(assetPath)?.forEach { filename ->
+            assetManager.open("$assetPath/$filename").use { input ->
+                val destFile = File(destDir, filename)
+                // Only copy the file if it does not exist yet
+                if (!destFile.exists()) {
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
                 }
             }
         }
-        return destDir
     }
 
-}

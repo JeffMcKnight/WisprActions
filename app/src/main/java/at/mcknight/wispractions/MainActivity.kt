@@ -15,20 +15,36 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.PermissionDenied
 import at.mcknight.wispractions.ui.composable.MainUi
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 const val LOG_TAG = "MicPermissions"
 
 /**
  * This is our launcher Activity
+ *
+ * Some general notes:
+ * * Host Microphone Access must be enabled for Speech-to-Text to work on an emulator
+ *
+ * TODO:
+ *  * Try to get faster STT response time: Update EndpointConfig in SherpaClient to have a short
+ *  (~700ms) [com.k2fsa.sherpa.onnx.EndpointRule.minTrailingSilence] when we have a short
+ *  (~2000 ms) [com.k2fsa.sherpa.onnx.EndpointRule.minUtteranceLength]
+ *  * Try to get faster STT response time: enable hardware acceleration in SherpaClient ("nnapi")
+ *
  */
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModel()
 
+    /**
+     * We launch this when we want to show the user the system dialog that requests the record
+     * permission.
+     */
     private val requestPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             Log.i(LOG_TAG, "registerForActivityResult() -- granted: $granted")
@@ -51,14 +67,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        lifecycleScope.launch { viewModel.intentFlow.collect { intentMsg ->
+            Log.i("MainActivity", "intentMsg: $intentMsg")
+        } }
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
-            val transcript by viewModel.transcript.collectAsState("Nothing transcribed yet...")
+//            val transcript by viewModel.transcript.collectAsState("Nothing transcribed yet...")
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
-                transcript = transcript,
+                transcript = "Nothing transcribed yet...",
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)

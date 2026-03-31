@@ -57,6 +57,8 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android) // includes viewModel { }
+    /** Google LiteRT-LM */
+    implementation(libs.litertlm.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
