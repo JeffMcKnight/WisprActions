@@ -72,7 +72,7 @@ class LiteRtRepo(
                     "android.intent.extra.alarm.MESSAGE": <TimerName>
                   }
                 }
-                The first number in the command should be used as the EXTRA_LENGTH
+                The first number in the command should be used as the android.intent.extra.alarm.LENGTH parameter value
                 Do not prepend the word "json" in the response.
                 Do not append or prepend backtick characters.
                 Omit AlarmClock.EXTRA_MESSAGE if no timer name is specified.

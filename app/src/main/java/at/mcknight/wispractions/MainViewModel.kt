@@ -109,9 +109,12 @@ data class MainUiState(
 )
 
 /**
- * Deserialize the JSON string into an [Intent]
+ * Deserialize the JSON string into an [Intent].
+ * If the extra parameter value is a String, also check if it's actually an integer, since the LLM
+ * will sometimes pass the timer duration as a String instead of an integer.
  */
 private fun String.toIntent(): Intent {
+    Log.i("toIntent()",this)
     val (action, extras) = Json.decodeFromString<IntentData>(this)
     return Intent(action).apply {
         extras.forEach { (key, value): Map.Entry<String, JsonElement> ->
@@ -121,7 +124,7 @@ private fun String.toIntent(): Intent {
                 is JsonPrimitive -> {
                     when {
                         value is JsonNull -> Unit
-                        value.isString              -> putExtra(key, value.content)
+                        value.isString              -> putExtra(key, (value.intOrNull ?: value.content))
                         value.booleanOrNull != null -> putExtra(key, value.boolean)
                         value.intOrNull != null     -> putExtra(key, value.int)
                         value.doubleOrNull != null  -> putExtra(key, value.double)

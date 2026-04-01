@@ -51,7 +51,7 @@ class AudioRecorder(private val scope: CoroutineScope) {
         )
         require(bufferSize != AudioRecord.ERROR_BAD_VALUE) { "Invalid AudioRecord params" }
 
-        Log.i("AudioRecorder", "bufferSize: $bufferSize")
+        Log.i("AudioRecorder", "start()")
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             SAMPLE_RATE,
