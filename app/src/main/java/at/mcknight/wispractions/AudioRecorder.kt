@@ -34,8 +34,14 @@ class AudioRecorder(private val scope: CoroutineScope) {
      * TODO: add a StateFlow to keep track of recording state
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun toggle() {
-        if (audioRecord != null) stop() else start()
+    fun toggle(): RecorderState {
+        if (audioRecord != null) {
+            stop()
+            return RecorderState.STOPPED
+        } else {
+            start()
+            return RecorderState.STARTED
+        }
     }
 
     /**
@@ -84,4 +90,9 @@ class AudioRecorder(private val scope: CoroutineScope) {
         audioRecord?.release()
         audioRecord = null
     }
+}
+
+enum class RecorderState {
+    STARTED,
+    STOPPED
 }

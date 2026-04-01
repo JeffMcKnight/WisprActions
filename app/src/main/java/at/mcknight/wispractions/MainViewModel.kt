@@ -71,8 +71,10 @@ class MainViewModel(
             return
         }
         sendPermissionAction(DismissDialog)
-        speechToTextRepo.toggle()
+        val recorderState = speechToTextRepo.toggle()
+        viewModelScope.launch{ _uiState.emit(MainUiState(recorderState.toMicLabel())) }
     }
+
 
     fun sendPermissionAction(action: PermissionAction) {
         permissionHandler.sendAction(action)
@@ -138,5 +140,15 @@ private fun String.toIntent(): Intent {
             }
 
         }
+    }
+}
+
+/**
+ * Tell the user what to do, or if we're listening
+ */
+private fun RecorderState.toMicLabel(): String {
+    return when(this) {
+        RecorderState.STARTED -> "Listening..."
+        RecorderState.STOPPED -> "Tap to Talk"
     }
 }
