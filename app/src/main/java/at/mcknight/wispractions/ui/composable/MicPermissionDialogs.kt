@@ -26,7 +26,7 @@ fun MicPermissionDialogs(
     dismissHandler: () -> Unit,
     permissionsRequiredHandler: () -> Unit,
 ) {
-    Log.i(LOG_TAG, "dialogState: ${dialogState?.javaClass}")
+    Log.i("MicPermissionDialogs", "dialogState: ${dialogState?.javaClass}")
     when (dialogState) {
         is PrePrompt -> {
             AlertDialog(

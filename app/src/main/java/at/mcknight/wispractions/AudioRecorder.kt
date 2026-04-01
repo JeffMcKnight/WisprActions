@@ -77,6 +77,7 @@ class AudioRecorder(private val scope: CoroutineScope) {
     }
 
     fun stop() {
+        Log.i("AudioRecorder", "stop()")
         recordingJob?.cancel()
         recordingJob = null
         audioRecord?.stop()

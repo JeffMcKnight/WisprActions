@@ -22,7 +22,7 @@ import at.mcknight.wispractions.ui.composable.MainUi
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-const val LOG_TAG = "MicPermissions"
+const val LOG_TAG = "MainActivity"
 
 /**
  * This is our launcher Activity
@@ -91,7 +91,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     /**
      * Launch to microphone settings page
      */
@@ -101,6 +100,15 @@ class MainActivity : ComponentActivity() {
         startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", packageName, null)
         })
+    }
+
+
+    /**
+     * Stop recording when the app is backgrounded
+     */
+    override fun onPause() {
+        viewModel.stopRecording()
+        super.onPause()
     }
 
     /**

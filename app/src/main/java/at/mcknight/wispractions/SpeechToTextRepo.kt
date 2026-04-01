@@ -33,4 +33,8 @@ class SpeechToTextRepo(
         audioRecorder.toggle()
     }
 
+    fun stop() {
+        audioRecorder.stop()
+    }
+
 }

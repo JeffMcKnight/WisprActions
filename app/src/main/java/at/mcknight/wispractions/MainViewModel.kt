@@ -92,6 +92,10 @@ class MainViewModel(
         sendAction(micClickAction)
     }
 
+    fun stopRecording() {
+        speechToTextRepo.stop()
+    }
+
 }
 
 /**
