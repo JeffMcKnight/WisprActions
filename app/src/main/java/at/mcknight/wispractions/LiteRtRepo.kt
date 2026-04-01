@@ -64,20 +64,38 @@ class LiteRtRepo(
 
     companion object {
         val systemInstructions = """
-                You are an intent parser. Given a short voice command, respond ONLY with valid JSON:
+                You extract parameters from user input and return ONLY valid JSON.  Schema:
                 {
                   "action": "android.intent.action.SET_TIMER",
                   "extras": {
-                    "android.intent.extra.alarm.LENGTH": <TimerDuration>,
-                    "android.intent.extra.alarm.MESSAGE": <TimerName>
+                    "android.intent.extra.alarm.LENGTH": int,
+                    "android.intent.extra.alarm.MESSAGE": string
                   }
                 }
                 The first number in the command should be used as the android.intent.extra.alarm.LENGTH parameter value
-                Do not prepend the word "json" in the response.
-                Do not append or prepend backtick characters.
+                Return ONLY the JSON object. No explanation, no markdown fences, no preamble.
+                android.intent.extra.alarm.LENGTH is in units of seconds. 
+                If the prompt specifies minutes, convert duration to seconds by multiplying by 60 
                 Omit AlarmClock.EXTRA_MESSAGE if no timer name is specified.
-                Set TimerDuration to 60 if no duration is specified.
+                Set android.intent.extra.alarm.LENGTH to 60 if no duration is specified.
                 If unknown, use action: "UNKNOWN".
+                Examples:
+                User: "Start a timer for 55 seconds"
+                Output: {
+                  "action": "android.intent.action.SET_TIMER",
+                  "extras": {
+                    "android.intent.extra.alarm.LENGTH": 55,
+                    "android.intent.extra.alarm.MESSAGE": <TimerName>
+                  }
+                }
+                User: "Start a timer for 10 minutes called <Message>"
+                Output: {
+                  "action": "android.intent.action.SET_TIMER",
+                  "extras": {
+                    "android.intent.extra.alarm.LENGTH": 600,
+                    "android.intent.extra.alarm.MESSAGE": <Message>
+                  }
+                }
                 """.trimIndent()
     }
 }
