@@ -7,11 +7,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.mcknight.wispractions.PermissionAction.DismissDialog
 import at.mcknight.wispractions.PermissionAction.RequestMicPermission
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -37,25 +44,45 @@ class MainViewModel(
 
     val dialogState get() = permissionHandler.dialogState
 
-//    private val _transcript = speechToTextRepo.transcript
-//    val transcript: Flow<String> = _transcript
+    /** Pass-through flow to emit the Intent to launch in the [MainActivity] */
+    private val _intentFlow = MutableSharedFlow<Intent>()
+    val intentFlow: Flow<Intent> = _intentFlow
 
     /**
+     * A Flow that emits the text transcribed in the [SpeechToTextRepo]; we make convert it to a
+     * [SharedFlow] here so it can be shared between the UI and the LiteRT LLM
+     */
+    private val _transcript: SharedFlow<String> = speechToTextRepo.transcript.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+    )
+
+    val transcript: SharedFlow<String> = _transcript
+        .map { "${it.lowercase()}..." }
+        .shareIn(viewModelScope, Lazily)
+
+    private val _uiState = MutableStateFlow(MainUiState())
+    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    /**
+     * Initialize the LiteRT engine, and then start collecting on the transcribed text.  We collect
+     * and re-emit here because we need to wait until the LiteRT engine has finished initializing
+     * before we start using it.
+     *
      * Converts the command transcribed by Sherpa-ONNX in the [SpeechToTextRepo] into an Android
      * [Intent] that can be launched in the [MainActivity].  There are two steps:
      * 1. Feed the raw command to the LiteRT to convert to a JSON blob with the command action and parameters, and
      * 2. Deserialize the JSON into an [Intent] that can be executed
      */
-    private val _intentFlow = speechToTextRepo.transcript
-        .map { liteRtRepo.prompt(it) }
-        .map { it.toIntent() }
-    val intentFlow: Flow<Intent> = _intentFlow
-
-    private val _uiState = MutableStateFlow(MainUiState())
-    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
-
     init {
-        viewModelScope.launch { liteRtRepo.initialize() }
+        viewModelScope.launch {
+            liteRtRepo.initialize()
+            _transcript
+                .map { liteRtRepo.prompt(it) }
+                .flowOn(Dispatchers.Default)
+                .map { it.toIntent() }
+                .collect { _intentFlow.emit(it) }
+        }
     }
 
     /**

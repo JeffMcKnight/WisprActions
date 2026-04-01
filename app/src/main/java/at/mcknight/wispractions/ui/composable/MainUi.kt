@@ -1,6 +1,8 @@
 package at.mcknight.wispractions.ui.composable
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,12 +34,25 @@ fun MainUi(
 ) {
     WisprActionsTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Text(
-                modifier = Modifier.padding(64.dp).fillMaxWidth(),
-                text = transcript,
-                textAlign = TextAlign.Center,
-                fontSize = 32.sp
-            )
+            Column(verticalArrangement = Arrangement.Top){
+                // Title
+                Text(
+                    modifier = Modifier
+                        .padding(64.dp)
+                        .fillMaxWidth(),
+                    text = "Start a Timer",
+                    textAlign = TextAlign.Center,
+                    fontSize = 32.sp
+                )
+                // Transcribed text
+                Text(
+                    modifier = Modifier
+                        .padding(64.dp)
+                        .fillMaxWidth(),
+                    text = transcript,
+                    textAlign = TextAlign.Left,
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -62,7 +62,8 @@ class MainActivity : ComponentActivity() {
         get() = PermissionDenied(!shouldShowRequestPermissionRationale(RECORD_AUDIO))
 
     /**
-     * Set up the UI and collect UI state from the ViewModel
+     * Set up the UI and collect UI state from the ViewModel. Also, collect and launch [Intent]s
+     * to start actions specified by user voice commands.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,11 +76,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             val dialogState = viewModel.dialogState
-//            val transcript by viewModel.intentFlow.collectAsState("Nothing transcribed yet...")
+            val transcript by viewModel.transcript.collectAsState("")
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
-                transcript = "Start a Timer",
+                transcript = transcript,
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)
