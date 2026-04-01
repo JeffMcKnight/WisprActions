@@ -4,6 +4,7 @@ import android.content.res.AssetManager
 import android.util.Log
 import at.mcknight.wispractions.AudioRecorder.Companion.SAMPLE_RATE
 import com.k2fsa.sherpa.onnx.EndpointConfig
+import com.k2fsa.sherpa.onnx.EndpointRule
 import com.k2fsa.sherpa.onnx.OnlineModelConfig
 import com.k2fsa.sherpa.onnx.OnlineRecognizer
 import com.k2fsa.sherpa.onnx.OnlineRecognizerConfig
@@ -48,9 +49,14 @@ class SherpaClient(
         provider = "cpu" // Use "nnapi" for hardware acceleration
     )
 
+    /**
+     * Silence detection rules
+     */
+    private val endpointConfig = EndpointConfig().apply { rule1 = EndpointRule(true, 0.5f, 0.2f) }
+
     val recognizerConfig = OnlineRecognizerConfig(
         modelConfig = modelConfig,
-        endpointConfig = EndpointConfig(), // VAD / silence detection
+        endpointConfig = endpointConfig,
         enableEndpoint = true,
     )
 

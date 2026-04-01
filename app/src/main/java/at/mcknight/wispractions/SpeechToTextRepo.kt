@@ -29,8 +29,12 @@ class SpeechToTextRepo(
         .filterNotNull()
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun toggle() {
-        audioRecorder.toggle()
+    fun toggle(): RecorderState {
+        return audioRecorder.toggle()
+    }
+
+    fun stop() {
+        audioRecorder.stop()
     }
 
 }

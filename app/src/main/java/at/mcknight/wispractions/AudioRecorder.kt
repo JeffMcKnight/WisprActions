@@ -34,8 +34,14 @@ class AudioRecorder(private val scope: CoroutineScope) {
      * TODO: add a StateFlow to keep track of recording state
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun toggle() {
-        if (audioRecord != null) stop() else start()
+    fun toggle(): RecorderState {
+        if (audioRecord != null) {
+            stop()
+            return RecorderState.STOPPED
+        } else {
+            start()
+            return RecorderState.STARTED
+        }
     }
 
     /**
@@ -51,7 +57,7 @@ class AudioRecorder(private val scope: CoroutineScope) {
         )
         require(bufferSize != AudioRecord.ERROR_BAD_VALUE) { "Invalid AudioRecord params" }
 
-        Log.i("AudioRecorder", "bufferSize: $bufferSize")
+        Log.i("AudioRecorder", "start()")
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             SAMPLE_RATE,
@@ -77,10 +83,16 @@ class AudioRecorder(private val scope: CoroutineScope) {
     }
 
     fun stop() {
+        Log.i("AudioRecorder", "stop()")
         recordingJob?.cancel()
         recordingJob = null
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
     }
+}
+
+enum class RecorderState {
+    STARTED,
+    STOPPED
 }
