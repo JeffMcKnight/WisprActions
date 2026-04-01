@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
             MainUi(
                 uiState = uiState,
                 dialogState = dialogState,
-                transcript = "Nothing transcribed yet...",
+                transcript = "Start a Timer",
                 clickHandler = { viewModel.sendAction(micClickAction) },
                 confirmHandler = {
                     viewModel.sendPermissionAction(DismissDialog)

@@ -2,14 +2,17 @@ package at.mcknight.wispractions.ui.composable
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import at.mcknight.wispractions.DialogType
 import at.mcknight.wispractions.MainUiState
 import at.mcknight.wispractions.ui.theme.WisprActionsTheme
@@ -30,8 +33,10 @@ fun MainUi(
     WisprActionsTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             Text(
-                modifier = Modifier.padding(64.dp),
-                text = transcript
+                modifier = Modifier.padding(64.dp).fillMaxWidth(),
+                text = transcript,
+                textAlign = TextAlign.Center,
+                fontSize = 32.sp
             )
             Box(
                 modifier = Modifier
