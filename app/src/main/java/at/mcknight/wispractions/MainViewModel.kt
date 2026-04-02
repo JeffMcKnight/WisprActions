@@ -149,8 +149,8 @@ private fun String.toIntent(): Intent? {
 }
 
 /**
- * Convert hours and minutes to seconds. If we cannot identify the time units, just return the
- * default timer duration (60 sec)
+ * Convert all supported time units (days, hours, and minutes) to seconds, if necessary. If we
+ * cannot identify the time units, just return the default timer duration (60 sec)
  */
 private fun IntentData.toLength(): Int {
     return when(timeUnits.lowercase()) {
