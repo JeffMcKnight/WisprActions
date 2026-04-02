@@ -113,8 +113,14 @@ class MainViewModel(
         sendAction(micClickAction)
     }
 
+    /**
+     * Stop recording with the microphone and update the text in the UI.
+     *
+     * TODO: update _uiState by exposing a Flow in SpeechToTextRepo that emits the [RecorderState].
+     */
     fun stopRecording() {
         speechToTextRepo.stop()
+        viewModelScope.launch{ _uiState.emit(MainUiState("Tap to Talk")) }
     }
 
 }
@@ -139,11 +145,16 @@ data class MainUiState(
  * @return a timer [Intent] that is ready to launch, or null if the action is wrong
  */
 private fun String.toIntent(): Intent? {
-    Log.i("toIntent()",this)
-    val intentData = Json.decodeFromString<IntentData>(this)
-    if (intentData.action != AlarmClock.ACTION_SET_TIMER) return null
-    return Intent(intentData.action).apply {
-        putExtra(AlarmClock.EXTRA_MESSAGE, intentData.name)
+    Log.i("String.toIntent()",this)
+    val intentData = try {
+        Json.decodeFromString<IntentData>(this)
+    } catch (e: Exception) {
+        Log.e("String.toIntent()", "*** Could not decode JSON: $this", e)
+        return null
+    }
+//    if (intentData.action != AlarmClock.ACTION_SET_TIMER) return null
+    return Intent(AlarmClock.ACTION_SET_TIMER).apply {
+        putExtra(AlarmClock.EXTRA_MESSAGE, intentData.name.lowercase().replaceFirstChar(Char::titlecase))
         putExtra(AlarmClock.EXTRA_LENGTH, intentData.toLength())
     }
 }
@@ -153,7 +164,7 @@ private fun String.toIntent(): Intent? {
  * cannot identify the time units, just return the default timer duration (60 sec)
  */
 private fun IntentData.toLength(): Int {
-    return when(timeUnits.lowercase()) {
+    return when(timeunits.lowercase()) {
         "day", "days"  -> duration * 60 * 60 * 24
         "minute", "minutes"  -> duration * 60
         "hour", "hours"  -> duration * 60 * 60

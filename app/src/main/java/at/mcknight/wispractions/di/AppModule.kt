@@ -53,8 +53,8 @@ val appModule = module {
 }
 
 
-//private const val LITE_RT_MODEL_NAME = "tiny_garden_q8_ekv1024.litertlm"
 private const val LITE_RT_MODEL_DIR: String = "litert-community"
-private const val LITE_RT_MODEL_NAME = "gemma3-1b-it-int4.litertlm"
+//private const val LITE_RT_MODEL_NAME = "gemma3-1b-it-int4.litertlm"
+private const val LITE_RT_MODEL_NAME = "tiny_garden_q8_ekv1024.litertlm"
 
 private const val SHERPA_MODEL_DIR: String = "sherpa-onnx-streaming-zipformer-en-2023-06-21"

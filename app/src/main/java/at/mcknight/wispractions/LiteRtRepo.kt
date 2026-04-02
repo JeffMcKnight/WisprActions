@@ -64,64 +64,50 @@ class LiteRtRepo(
 
     companion object {
         val systemInstructions = """
-                You extract parameters from user input and return ONLY valid JSON.  Schema:
+                You extract parameters from user input and return a function call the passes valid JSON as a raw string.  JSON Schema:
                 {
-                  "action": String,
                   "duration": Int,
                   "name": String,
-                  "timeUnits": String
+                  "timeunits": String
                 }
-                Return ONLY the JSON object. No explanation, no markdown fences, no preamble.
-                Set `action`: "android.intent.action.SET_TIMER" if user input includes the word timer or alarm 
-                If unknown, set `action`: "UNKNOWN".
                 Set `duration` property to first number in the user input
+                Convert number as text to integer, for example:
+                 "twenty three", set "duration": 23
+                 "forty seven", set "duration": 47
                 Set `duration` property to 60 if no duration is specified.
                 Set `timeUnits` property to day, hour, minute, or second. 
                 Set `name` property to empty string if no timer name is specified.
                 Examples:
-                User: "Start a timer for 55 seconds"
-                Output: {
-                  "action": "android.intent.action.SET_TIMER",
-                  "duration": "55",
-                  "name": "",
-                  "timeUnits": "second"
-                }
+                User: "Start a timer"
+                Output: <start_function_call>call timer({"duration": 60,"name": "","timeUnits": "second"})<end_function_call>
+                User: "Start a timer for fifty five seconds"
+                Output: <start_function_call>call timer({"duration": 55,"name": "","timeUnits": "second"})<end_function_call>
+                User: "Set a thirty four minute timer called taco"
+                Output: <start_function_call>call timer({"duration": 34,"name": "Taco","timeUnits": "minute"})<end_function_call>
                 User: "Set a timer for forty seven minutes called Laundry"
-                Output: {
-                  "action": "android.intent.action.SET_TIMER",
-                  "duration": "47",
-                  "name": "Laundry",
-                  "timeUnits": "minute"
-                }
+                Output: <start_function_call>call timer({"duration": 47,"name": "Laundry","timeUnits": "minute"})<end_function_call>
                 User: "Start a fourteen hour timer called Dishwasher"
-                Output: {
-                  "action": "android.intent.action.SET_TIMER",
-                  "duration": "14",
-                  "name": "Dishwasher",
-                  "timeUnits": "hour"
-                }
-                User: "Set a four day timer called Lasagna"
-                Output: {
-                  "action": "android.intent.action.SET_TIMER",
-                  "duration": "4",
-                  "name": "Lasagna",
-                  "timeUnits": "day"
-                }
+                Output: <start_function_call>call timer({"duration": 14,"name": "Dishwasher","timeUnits": "hour"})<end_function_call>
+                User: "Set a three day timer called Lasagna"
+                Output: <start_function_call>call timer({"duration": 3,"name": "Lasagna","timeUnits": "day"})<end_function_call>
                 """.trimIndent()
     }
 }
 
 /**
- * Trim leading and trailing backticks and "json".  The LLM really wants to include this extra cruft
- * even though the system instructions explicitly tell not to do so.
+ * Trim leading and trailing "function_call" text.  The Tiny Garden LLM is explicitly trained to
+ * output in this format, so we can be confident it will always be there, and simply strip it out.
+ * We apply [lowercase] since capitalization is not guaranteed.
  */
 private fun String.trimCruft(): String {
     val cruftRemoved = this
+        .lowercase()
         .trim()
-        .removePrefix("```json")
-        .removePrefix("```")
-        .removeSuffix("\n```")
+        .removePrefix("<start_function_call>call timer")
+        .removePrefix("(")
+        .removeSuffix("<end_function_call>")
+        .removeSuffix(")")
         .trim()
+    Log.i("trimCruft()","cruftRemoved: $cruftRemoved")
     return cruftRemoved
 }
-
