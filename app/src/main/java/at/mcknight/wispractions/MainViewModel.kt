@@ -2,6 +2,7 @@ package at.mcknight.wispractions
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.provider.AlarmClock
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,22 +17,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.boolean
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.double
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.intOrNull
 
 /**
  *
@@ -81,6 +72,7 @@ class MainViewModel(
                 .map { liteRtRepo.prompt(it) }
                 .flowOn(Dispatchers.Default)
                 .map { it.toIntent() }
+                .filterNotNull()
                 .collect { _intentFlow.emit(it) }
         }
     }
@@ -143,30 +135,30 @@ data class MainUiState(
 
 /**
  * Deserialize the JSON string into an [Intent].
- * If the extra parameter value is a String, also check if it's actually an integer, since the LLM
- * will sometimes pass the timer duration as a String instead of an integer.
+ *
+ * @return a timer [Intent] that is ready to launch, or null if the action is wrong
  */
-private fun String.toIntent(): Intent {
+private fun String.toIntent(): Intent? {
     Log.i("toIntent()",this)
-    val (action, extras) = Json.decodeFromString<IntentData>(this)
-    return Intent(action).apply {
-        extras.forEach { (key, value): Map.Entry<String, JsonElement> ->
-            when (value) {
-                is JsonObject -> { /* value is JsonObject, access via value["key"] */ }
-                is JsonArray -> { /* value is JsonArray, iterate value */ }
-                is JsonPrimitive -> {
-                    when {
-                        value is JsonNull -> Unit
-                        value.isString              -> putExtra(key, (value.intOrNull ?: value.content))
-                        value.booleanOrNull != null -> putExtra(key, value.boolean)
-                        value.intOrNull != null     -> putExtra(key, value.int)
-                        value.doubleOrNull != null  -> putExtra(key, value.double)
-                        else -> Log.w("toIntent()", "unexpected value type: ${value.content}")
-                    }
-                }
-            }
+    val intentData = Json.decodeFromString<IntentData>(this)
+    if (intentData.action != AlarmClock.ACTION_SET_TIMER) return null
+    return Intent(intentData.action).apply {
+        putExtra(AlarmClock.EXTRA_MESSAGE, intentData.name)
+        putExtra(AlarmClock.EXTRA_LENGTH, intentData.toLength())
+    }
+}
 
-        }
+/**
+ * Convert all supported time units (days, hours, and minutes) to seconds, if necessary. If we
+ * cannot identify the time units, just return the default timer duration (60 sec)
+ */
+private fun IntentData.toLength(): Int {
+    return when(timeUnits.lowercase()) {
+        "day", "days"  -> duration * 60 * 60 * 24
+        "minute", "minutes"  -> duration * 60
+        "hour", "hours"  -> duration * 60 * 60
+        "second", "seconds"  -> duration
+        else -> 60
     }
 }
 
