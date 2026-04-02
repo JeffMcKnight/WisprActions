@@ -66,35 +66,46 @@ class LiteRtRepo(
         val systemInstructions = """
                 You extract parameters from user input and return ONLY valid JSON.  Schema:
                 {
-                  "action": "android.intent.action.SET_TIMER",
-                  "extras": {
-                    "android.intent.extra.alarm.LENGTH": int,
-                    "android.intent.extra.alarm.MESSAGE": string
-                  }
+                  "action": String,
+                  "duration": Int,
+                  "name": String,
+                  "timeUnits": String
                 }
-                The first number in the command should be used as the android.intent.extra.alarm.LENGTH parameter value
                 Return ONLY the JSON object. No explanation, no markdown fences, no preamble.
-                android.intent.extra.alarm.LENGTH is in units of seconds. 
-                If the prompt specifies minutes, convert duration to seconds by multiplying by 60 
-                Omit AlarmClock.EXTRA_MESSAGE if no timer name is specified.
-                Set android.intent.extra.alarm.LENGTH to 60 if no duration is specified.
-                If unknown, use action: "UNKNOWN".
+                Set `action`: "android.intent.action.SET_TIMER" if user input includes the word timer or alarm 
+                If unknown, set `action`: "UNKNOWN".
+                Set `duration` property to first number in the user input
+                Set `duration` property to 60 if no duration is specified.
+                Set `timeUnits` property to day, hour, minute, or second. 
+                Set `name` property to empty string if no timer name is specified.
                 Examples:
                 User: "Start a timer for 55 seconds"
                 Output: {
                   "action": "android.intent.action.SET_TIMER",
-                  "extras": {
-                    "android.intent.extra.alarm.LENGTH": 55,
-                    "android.intent.extra.alarm.MESSAGE": <TimerName>
-                  }
+                  "duration": "55",
+                  "name": "",
+                  "timeUnits": "second"
                 }
-                User: "Start a timer for 10 minutes called <Message>"
+                User: "Set a timer for forty seven minutes called Laundry"
                 Output: {
                   "action": "android.intent.action.SET_TIMER",
-                  "extras": {
-                    "android.intent.extra.alarm.LENGTH": 600,
-                    "android.intent.extra.alarm.MESSAGE": <Message>
-                  }
+                  "duration": "47",
+                  "name": "Laundry",
+                  "timeUnits": "minute"
+                }
+                User: "Start a fourteen hour timer called Dishwasher"
+                Output: {
+                  "action": "android.intent.action.SET_TIMER",
+                  "duration": "14",
+                  "name": "Dishwasher",
+                  "timeUnits": "hour"
+                }
+                User: "Set a four day timer called Lasagna"
+                Output: {
+                  "action": "android.intent.action.SET_TIMER",
+                  "duration": "4",
+                  "name": "Lasagna",
+                  "timeUnits": "day"
                 }
                 """.trimIndent()
     }
