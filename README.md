@@ -10,7 +10,7 @@ Uses two different on-device LLM's to turn the spoken command into a launchable 
 **Setup:**  
 * You will need to download the LLM models and manually copy them to the appropriate Asset directory because the models exceed the GitHub 100MB file size limit.
   * Sherpa-ONNX Model -- sherpa-onnx-streaming-zipformer-en-2023-06-21:
-    * Download: https://k2-fsa.github.io/sherpa/onnx/pretrained_models/online-transducer/zipformer-transducer-models.html#id27
+    * Download: https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-2023-06-21.tar.bz2
     * Asset Directory: `assets/sherpa-onnx-streaming-zipformer-en-2023-06-21`
   * LiteRT Model -- gemma3-1b-it-int4.litertlm:  
     * Download: https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.litertlm?download=true  
