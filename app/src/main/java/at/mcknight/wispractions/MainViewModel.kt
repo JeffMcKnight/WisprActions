@@ -115,6 +115,7 @@ class MainViewModel(
 
     fun stopRecording() {
         speechToTextRepo.stop()
+        viewModelScope.launch{ _uiState.emit(MainUiState("Tap to Talk")) }
     }
 
 }
